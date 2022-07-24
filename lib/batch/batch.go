@@ -3,10 +3,13 @@ package batch
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"golang.org/x/sync/errgroup"
 )
+
+var mx sync.Mutex
 
 type user struct {
 	ID int64
@@ -28,7 +31,9 @@ func getBatch(n int64, pool int64) (res []user) {
 		id := int64(i)
 		errG.Go(func() error {
 			user := getOne(id)
+			mx.Lock()
 			res = append(res, user)
+			mx.Unlock()
 			return nil
 		})
 	}
